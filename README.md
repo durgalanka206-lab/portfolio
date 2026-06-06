@@ -1,32 +1,134 @@
-# Lanka Durga Portfolio
+# 🚀 Lanka Durga Portfolio
 
-Modern full-stack portfolio built with TanStack Start, React, TypeScript and Express.js.
+Modern full-stack developer portfolio built with **TanStack Start**, **React 19**, **TypeScript**, **Express.js**, and **Nodemailer**.
 
-## Project Structure
+## 🌐 Live Demo
 
+**Frontend (Vercel):**
+https://portfolio-smoky-two-c9gafk8lgy.vercel.app
+
+## 📂 Project Structure
+
+```text
 portfolio/
-├── frontend/    # TanStack Start Frontend
-└── backend/     # Express API + Nodemailer
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   └── vite.config.ts
+│
+└── backend/
+    ├── server.js
+    ├── package.json
+    └── vercel.json
+```
 
-## Tech Stack
+---
 
-Frontend:
+## ✨ Features
+
+- Modern responsive UI
+- Full-stack architecture
+- Resume preview and download
+- Project showcase
+- Certification gallery
+- Contact form
+- Email OTP verification
+- Email notifications using Nodemailer
+- Smooth animations
+- Mobile-friendly design
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
 - React 19
 - TypeScript
 - TanStack Start
 - Vite
+- Tailwind CSS
+- Framer Motion
 
-Backend:
+### Backend
+
 - Node.js
 - Express.js
 - Nodemailer
+- Gmail SMTP
 
-## Live Demo
+---
 
-Frontend:
+## 🚀 Local Setup
+
+### Clone Repository
+
+```bash
+git clone https://github.com/durgalanka206-lab/portfolio.git
+cd portfolio
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend
+
+```bash
+cd backend
+npm install
+npm start
+```
+
+---
+
+## 🔐 Environment Variables
+
+Create a `.env` file inside `backend/`
+
+```env
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+PORT=5000
+```
+
+---
+
+## 📌 Deployment
+
+### Frontend
+
+- Platform: Vercel
+- Framework: TanStack Start
+
+### Backend
+
+- Platform: Render
+- Runtime: Node.js
+
+---
+
+## 📞 Contact
+
+**Lanka Durga**
+
+📧 durgalanka206@gmail.com
+
+🌐 Portfolio:
 https://portfolio-smoky-two-c9gafk8lgy.vercel.app
 
-## Author
+💻 GitHub:
+https://github.com/durgalanka206-lab
 
-Lanka Durga
-GitHub: https://github.com/durgalanka206-lab
+🔗 LinkedIn:
+https://www.linkedin.com/in/lanka-durga
+
+---
+
+## ⭐ Support
+
+If you like this project, consider giving it a star on GitHub.
