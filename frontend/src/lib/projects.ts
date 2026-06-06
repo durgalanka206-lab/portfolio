@@ -1,0 +1,31 @@
+/**
+ * GitHub repository URLs — replace `#` with your exact repo links when ready.
+ * Keys match each project's `slug` in Projects.tsx.
+ */
+export const PROJECT_GITHUB_URLS: Record<string, string> = {
+ hirehub: "https://github.com/durgalanka206-lab/HireHub",
+  sms: "https://github.com/durgalanka206-lab/Student-Management-System",
+  portfolio: "#",
+};
+
+export function projectGithubHref(slug: string): string | null {
+  const url = PROJECT_GITHUB_URLS[slug];
+  if (!url || url === "#") return null;
+  return url;
+}
+
+/**
+ * Live website URLs.
+ * Keys match each project's `slug` in Projects.tsx.
+ */
+export const PROJECT_LIVE_URLS: Record<string, string> = {
+  hirehub: "https://hirehub-silk.vercel.app/",
+  sms: "https://student-management-system-nu-khaki.vercel.app/",
+  portfolio: "#",
+};
+
+export function projectLiveHref(slug: string): string | null {
+  const url = PROJECT_LIVE_URLS[slug];
+  if (!url || url === "#") return null;
+  return url;
+}
