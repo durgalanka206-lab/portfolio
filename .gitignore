@@ -17,3 +17,7 @@ dist/
 .vscode/
 .idea/
 .DS_Store
+
+# Local error logs / HTTP Archives
+errors/
+*.har

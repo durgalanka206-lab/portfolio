@@ -190,9 +190,9 @@ export function Contact() {
         if (window.turnstile && turnstileRef.current) {
           clearInterval(interval);
           const widgetId = window.turnstile.render(turnstileRef.current, {
-            sitekey: "1x00000000000000000000AA", // Cloudflare testing sitekey (always passes)
+            sitekey: "1x00000000000000000000BB", // Cloudflare testing sitekey for invisible widgets (always passes)
             theme: "dark",
-            size: "invisible",
+            size: "normal",
             callback: (token: string) => {
               setTurnstileToken(token);
             },

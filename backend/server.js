@@ -81,23 +81,30 @@ const validateMessage = (val) => {
   return "";
 };
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Create transporter only if credentials are set
+const hasEmailCredentials = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+const transporter = hasEmailCredentials
+  ? nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    })
+  : null;
 
-// Verify connection configuration
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log("Nodemailer transporter error:", error);
-  } else {
-    console.log("Server is ready to take our messages");
-  }
-});
+// Verify connection configuration if transporter is configured
+if (transporter) {
+  transporter.verify(function (error, success) {
+    if (error) {
+      console.log("Nodemailer transporter error:", error);
+    } else {
+      console.log("Server is ready to take our messages");
+    }
+  });
+} else {
+  console.log("WARNING: EMAIL_USER or EMAIL_PASS not set. Nodemailer will run in mock mode for development.");
+}
 
 const otpStore = new Map();
 
@@ -123,15 +130,24 @@ app.post('/api/contact/send-otp', async (req, res) => {
   });
 
   try {
-    await transporter.sendMail({
-      from: `"Portfolio Verification" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your OTP for Portfolio Contact Verification",
-      text: `Your verification code is: ${otp}\n\nIt expires in 5 minutes.`,
-      html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It expires in 5 minutes.</p>`
+    if (transporter) {
+      await transporter.sendMail({
+        from: `"Portfolio Verification" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Your OTP for Portfolio Contact Verification",
+        text: `Your verification code is: ${otp}\n\nIt expires in 5 minutes.`,
+        html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It expires in 5 minutes.</p>`
+      });
+      console.log(`[OTP Email Sent] Successfully sent OTP to: ${email}`);
+    } else {
+      console.log(`\n==================================================`);
+      console.log(`[MOCK EMAIL] OTP Verification Code for ${email}: ${otp}`);
+      console.log(`==================================================\n`);
+    }
+    return res.json({ 
+      success: true, 
+      message: transporter ? "OTP sent successfully." : "OTP generated (Mock Mode: check backend console)." 
     });
-    console.log(`[OTP Email Sent] Successfully sent OTP to: ${email}`);
-    return res.json({ success: true, message: "OTP sent successfully." });
   } catch (error) {
     console.error(`[OTP Email Error] Failed to send OTP to ${email}:`, error);
     return res.status(500).json({ success: false, message: "Failed to send OTP." });
@@ -206,13 +222,25 @@ app.post('/api/contact', async (req, res) => {
       `
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[Contact Request Success] Message sent id: ${info.messageId}`);
+    if (transporter) {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`[Contact Request Success] Message sent id: ${info.messageId}`);
+    } else {
+      console.log(`\n==================================================`);
+      console.log(`[MOCK EMAIL] Contact Form Message Received!`);
+      console.log(`Name: ${name}`);
+      console.log(`Email: ${email}`);
+      console.log(`Message: ${message}`);
+      console.log(`==================================================\n`);
+    }
 
     // Clear verification after successful submit
     otpStore.delete(email);
 
-    return res.status(200).json({ success: true, message: "Message sent successfully!" });
+    return res.status(200).json({ 
+      success: true, 
+      message: transporter ? "Message sent successfully!" : "Message received (Mock Mode: check backend console)!" 
+    });
   } catch (error) {
     console.error(`[Contact Request Error] Failed to send email for ${email}:`, error);
     return res.status(500).json({ success: false, message: "Failed to send message. Please try again later." });
