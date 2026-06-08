@@ -5,7 +5,7 @@
 export const PROJECT_GITHUB_URLS: Record<string, string> = {
  hirehub: "https://github.com/durgalanka206-lab/HireHub",
   sms: "https://github.com/durgalanka206-lab/Student-Management-System",
-  portfolio: "#",
+  portfolio:"https://github.com/durgalanka206-lab/portfolio",
 };
 
 export function projectGithubHref(slug: string): string | null {
@@ -21,7 +21,7 @@ export function projectGithubHref(slug: string): string | null {
 export const PROJECT_LIVE_URLS: Record<string, string> = {
   hirehub: "https://hirehub-silk.vercel.app/",
   sms: "https://student-management-system-nu-khaki.vercel.app/",
-  portfolio: "#",
+  portfolio: "https://lankadurga.vercel.app"",
 };
 
 export function projectLiveHref(slug: string): string | null {
