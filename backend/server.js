@@ -8,8 +8,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+const allowedOrigins = [
+  "https://portfolio-smoky-two-c9gafk8lgy.vercel.app",
+  "http://localhost:8080",
+  "http://localhost:3000",
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`CORS: Origin "${origin}" not allowed`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Validation helpers matching frontend logic

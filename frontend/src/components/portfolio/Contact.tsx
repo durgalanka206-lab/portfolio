@@ -234,7 +234,7 @@ export function Contact() {
     }
     setIsSendingOtp(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const apiUrl = import.meta.env.VITE_API_URL || "https://portfolio-jjnx.onrender.com";
       const response = await fetch(`${apiUrl}/api/contact/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -266,7 +266,7 @@ export function Contact() {
     }
     setIsVerifyingOtp(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const apiUrl = import.meta.env.VITE_API_URL || "https://portfolio-jjnx.onrender.com";
       const response = await fetch(`${apiUrl}/api/contact/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -312,7 +312,7 @@ export function Contact() {
     setSubmitError(null);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const apiUrl = import.meta.env.VITE_API_URL || "https://portfolio-jjnx.onrender.com";
       const response = await fetch(`${apiUrl}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
