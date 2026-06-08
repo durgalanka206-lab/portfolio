@@ -209,6 +209,40 @@ app.post('/api/contact', async (req, res) => {
     const info = await transporter.sendMail(mailOptions);
     console.log(`[Contact Request Success] Message sent id: ${info.messageId}`);
 
+    // Send auto-reply confirmation to the user
+    try {
+      await transporter.sendMail({
+        from: `"Lanka Durga" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Thanks for reaching out! — Lanka Durga",
+        text: `Hi ${name},\n\nThank you for getting in touch! I've received your message and will get back to you as soon as possible.\n\nHere's a copy of what you sent:\n---\n${message}\n---\n\nBest regards,\nLanka Durga\nhttps://portfolio-smoky-two-c9gafk8lgy.vercel.app`,
+        html: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #0a0a0a; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);">
+            <h2 style="color: #ffffff; margin-bottom: 8px;">Hi ${name} 👋</h2>
+            <p style="color: #a1a1aa; line-height: 1.7; font-size: 15px;">
+              Thank you for getting in touch! I've received your message and will get back to you as soon as possible.
+            </p>
+            <div style="margin: 24px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 3px solid #3b82f6;">
+              <p style="color: #71717a; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Your Message</p>
+              <p style="color: #d4d4d8; line-height: 1.6; font-size: 14px;">${message.replace(/\n/g, '<br>')}</p>
+            </div>
+            <p style="color: #a1a1aa; line-height: 1.7; font-size: 15px;">
+              Best regards,<br/>
+              <strong style="color: #ffffff;">Lanka Durga</strong>
+            </p>
+            <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 24px 0;" />
+            <p style="color: #52525b; font-size: 12px; text-align: center;">
+              <a href="https://portfolio-smoky-two-c9gafk8lgy.vercel.app" style="color: #3b82f6; text-decoration: none;">portfolio-smoky-two-c9gafk8lgy.vercel.app</a>
+            </p>
+          </div>
+        `
+      });
+      console.log(`[Auto-Reply Sent] Confirmation email sent to: ${email}`);
+    } catch (replyError) {
+      // Don't fail the whole request if auto-reply fails
+      console.error(`[Auto-Reply Error] Failed to send confirmation to ${email}:`, replyError);
+    }
+
     // Clear verification after successful submit
     otpStore.delete(email);
 
