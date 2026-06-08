@@ -342,14 +342,16 @@ export function Contact() {
       setOtpValue("");
       setOtpCooldown(0);
       setTurnstileToken(null);
-      if (window.turnstile) {
-        window.turnstile.reset();
-      }
     } catch (err: any) {
       console.error(err);
       const errorMsg = err.message || "Failed to send message. Please try again later.";
       setSubmitError(errorMsg);
       toast.error(errorMsg);
+      // Reset Turnstile only on failure so the user can retry
+      setTurnstileToken(null);
+      if (window.turnstile) {
+        window.turnstile.reset();
+      }
     } finally {
       setSubmitting(false);
     }
