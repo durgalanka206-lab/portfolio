@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
-  "https://portfolio-smoky-two-c9gafk8lgy.vercel.app",
+  "https://lankadurga.vercel.app",
   "http://localhost:8080",
   "http://localhost:3000",
 ];
