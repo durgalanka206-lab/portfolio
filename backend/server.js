@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -94,27 +93,38 @@ const validateMessage = (val) => {
   return "";
 };
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // Port 587 requires secure: false
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false
+const sendEmail = async ({ from, to, subject, text, html, replyTo }) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY environment variable is not defined on Render/locally.");
   }
-});
 
-// Verify connection configuration
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log("Nodemailer transporter error:", error);
-  } else {
-    console.log("Server is ready to take our messages");
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: from || process.env.FROM_EMAIL || "onboarding@resend.dev",
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      text,
+      html,
+      reply_to: replyTo,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || `Failed to send email: ${response.statusText}`);
   }
-});
+
+  return data;
+};
+
+console.log("Resend Email Service helper initialized.");
 
 const otpStore = new Map();
 
@@ -140,8 +150,8 @@ app.post('/api/contact/send-otp', async (req, res) => {
   });
 
   try {
-    await transporter.sendMail({
-      from: `"Portfolio Verification" <${process.env.EMAIL_USER}>`,
+    await sendEmail({
+      from: `Portfolio Verification <${process.env.FROM_EMAIL || 'onboarding@resend.dev'}>`,
       to: email,
       subject: "Your OTP for Portfolio Contact Verification",
       text: `Your verification code is: ${otp}\n\nIt expires in 5 minutes.`,
@@ -151,7 +161,7 @@ app.post('/api/contact/send-otp', async (req, res) => {
     return res.json({ success: true, message: "OTP sent successfully." });
   } catch (error) {
     console.error(`[OTP Email Error] Failed to send OTP to ${email}:`, error);
-    return res.status(500).json({ success: false, message: "Failed to send OTP." });
+    return res.status(500).json({ success: false, message: `Failed to send OTP: ${error.message}` });
   }
 });
 
@@ -209,9 +219,10 @@ app.post('/api/contact', async (req, res) => {
   }
 
   try {
-    const mailOptions = {
-      from: `"${name}" <${email}>`,
-      to: 'durgalanka2006@gmail.com', // Sending to the requested email
+    const info = await sendEmail({
+      from: `Portfolio Contact <${process.env.FROM_EMAIL || 'onboarding@resend.dev'}>`,
+      to: 'durgalanka2006@gmail.com', // Sending to your email
+      replyTo: email, // Reply-to will be visitor's email
       subject: `New Portfolio Message from ${name}`,
       text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
       html: `
@@ -221,15 +232,13 @@ app.post('/api/contact', async (req, res) => {
         <p><strong>Message:</strong></p>
         <p>${message.replace(/\n/g, '<br>')}</p>
       `
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[Contact Request Success] Message sent id: ${info.messageId}`);
+    });
+    console.log(`[Contact Request Success] Message sent successfully via Resend:`, info.id);
 
     // Send auto-reply confirmation to the user
     try {
-      await transporter.sendMail({
-        from: `"Lanka Durga" <${process.env.EMAIL_USER}>`,
+      await sendEmail({
+        from: `Lanka Durga <${process.env.FROM_EMAIL || 'onboarding@resend.dev'}>`,
         to: email,
         subject: "Thanks for reaching out! — Lanka Durga",
         text: `Hi ${name},\n\nThank you for getting in touch! I've received your message and will get back to you as soon as possible.\n\nHere's a copy of what you sent:\n---\n${message}\n---\n\nBest regards,\nLanka Durga\nhttps://portfolio-smoky-two-c9gafk8lgy.vercel.app`,
