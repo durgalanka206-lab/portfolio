@@ -1,28 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
+import { useForm } from "@formspree/react";
 
 import { FormSuccessCelebration } from "./FormSuccessCelebration";
 import { SectionHeader } from "./SectionHeader";
 import { ResumeTrigger } from "./ResumePreview";
-
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (
-        container: string | HTMLElement,
-        params: {
-          sitekey: string;
-          callback?: (token: string) => void;
-          "expired-callback"?: () => void;
-          "error-callback"?: () => void;
-          theme?: "light" | "dark" | "auto";
-        }
-      ) => string;
-      reset: (widgetId?: string) => void;
-    };
-  }
-}
 
 const items = [
   { label: "Location", value: "Kakinada, Andhra Pradesh", href: undefined },
@@ -89,12 +72,11 @@ const validateEmail = (val: string): string => {
   }
 
   // Reject emails with random keyboard-spam patterns
-  // 1. More than 4 consecutive consonants (blocks "sjdvvwjgiw")
   if (/[bcdfghjklmnpqrstvwxz]{5,}/.test(localPart)) {
     return "Email appears to contain random characters.";
   }
   
-  // 2. Common keyboard walks
+  // Common keyboard walks
   const walks = [
     "qwer", "wert", "erty", "rtyu", "tyui", "yuio", "uiop",
     "asdf", "sdfg", "dfgh", "fghj", "ghjk", "hjkl",
@@ -104,7 +86,7 @@ const validateEmail = (val: string): string => {
     return "Email contains invalid sequences.";
   }
 
-  // 3. Repeating characters (e.g., "aaa")
+  // Repeating characters (e.g., "aaa")
   if (/(.)\1{3,}/.test(localPart)) {
     return "Email contains invalid repeating characters.";
   }
@@ -143,78 +125,10 @@ const validateMessage = (val: string): string => {
 };
 
 export function Contact() {
-  const [submitting, setSubmitting] = useState(false);
-  const [succeeded, setSucceeded] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const formRef = useRef<HTMLFormElement>(null);
-  const turnstileRef = useRef<HTMLDivElement>(null);
+  const [state, handleFormspreeSubmit] = useForm("mlgvkwlg");
 
   const [values, setValues] = useState({ name: "", email: "", message: "" });
   const [touched, setTouched] = useState({ name: false, email: false, message: false });
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [otpValue, setOtpValue] = useState("");
-  const [otpCooldown, setOtpCooldown] = useState(0);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-
-  // OTP Cooldown timer
-  useEffect(() => {
-    if (otpCooldown > 0) {
-      const timer = setTimeout(() => setOtpCooldown(otpCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [otpCooldown]);
-
-  // Load Cloudflare Turnstile script
-  useEffect(() => {
-    const scriptId = "cloudflare-turnstile-script";
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
-    }
-  }, []);
-
-  // Initialize Turnstile widget
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (typeof window !== "undefined") {
-      interval = setInterval(() => {
-        if (window.turnstile && turnstileRef.current) {
-          clearInterval(interval);
-          const widgetId = window.turnstile.render(turnstileRef.current, {
-            sitekey: "1x00000000000000000000BB", // Cloudflare testing sitekey for invisible widgets (always passes)
-            theme: "dark",
-            size: "normal",
-            callback: (token: string) => {
-              setTurnstileToken(token);
-            },
-            "expired-callback": () => {
-              setTurnstileToken(null);
-              if (window.turnstile) window.turnstile.execute(widgetId);
-            },
-            "error-callback": () => {
-              setTurnstileToken(null);
-            },
-          });
-          // Execute background verification immediately
-          window.turnstile.execute(widgetId);
-        }
-      }, 100);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, []);
-
-
 
   // Compute validation errors dynamically
   const nameError = touched.name ? validateName(values.name) : "";
@@ -225,71 +139,7 @@ export function Contact() {
   const rawNameError = validateName(values.name);
   const rawEmailError = validateEmail(values.email);
   const rawMessageError = validateMessage(values.message);
-  const isFormValid = !rawNameError && !rawEmailError && !rawMessageError && values.name && values.email && values.message && isEmailVerified;
-
-  const handleSendOtp = async () => {
-    if (!values.email || rawEmailError) {
-      toast.error("Please enter a valid email address first.");
-      return;
-    }
-    setIsSendingOtp(true);
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://portfolio-jjnx.onrender.com";
-      const response = await fetch(`${apiUrl}/api/contact/send-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: values.email.trim() })
-      });
-      
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned an invalid response. Please check backend connection.");
-      }
-      
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to send OTP");
-      
-      setIsOtpSent(true);
-      setOtpCooldown(60);
-      toast.success("OTP sent to your email.");
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setIsSendingOtp(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otpValue || otpValue.length !== 6) {
-      toast.error("Please enter a 6-digit OTP.");
-      return;
-    }
-    setIsVerifyingOtp(true);
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://portfolio-jjnx.onrender.com";
-      const response = await fetch(`${apiUrl}/api/contact/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: values.email.trim(), otp: otpValue })
-      });
-      
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned an invalid response. Please check backend connection.");
-      }
-      
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to verify OTP");
-      
-      setIsEmailVerified(true);
-      setIsOtpSent(false);
-      toast.success("Email verified successfully.");
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setIsVerifyingOtp(false);
-    }
-  };
+  const isFormValid = !rawNameError && !rawEmailError && !rawMessageError && values.name && values.email && values.message;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -299,64 +149,16 @@ export function Contact() {
       toast.error("Please fill out the fields correctly.");
       return;
     }
-    if (!isEmailVerified) {
-      toast.error("Please verify your email address.");
-      return;
-    }
-    if (!turnstileToken) {
-      toast.error("Please complete the Turnstile spam verification.");
-      return;
-    }
 
-    setSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://portfolio-jjnx.onrender.com";
-      const response = await fetch(`${apiUrl}/api/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: values.name.trim(),
-          email: values.email.trim(),
-          message: values.message.trim()
-        })
-      });
-      
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned an invalid response. Please check backend connection.");
-      }
-      
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || "Failed to send message.");
-      }
-      
-      setSucceeded(true);
-      toast.success("Message sent successfully! I will get back to you soon.");
-      formRef.current?.reset();
+    const res = await handleFormspreeSubmit(e);
+    if (res.response && res.response.ok) {
+      toast.success("Message sent successfully!");
       setValues({ name: "", email: "", message: "" });
       setTouched({ name: false, email: false, message: false });
-      setIsEmailVerified(false);
-      setOtpValue("");
-      setOtpCooldown(0);
-      setTurnstileToken(null);
-    } catch (err: any) {
-      console.error(err);
-      const errorMsg = err.message || "Failed to send message. Please try again later.";
-      setSubmitError(errorMsg);
-      toast.error(errorMsg);
-      // Reset Turnstile only on failure so the user can retry
-      setTurnstileToken(null);
-      if (window.turnstile) {
-        window.turnstile.reset();
-      }
-    } finally {
-      setSubmitting(false);
+    } else {
+      toast.error("Failed to send message. Please try again later.");
     }
   };
-
 
   return (
     <section id="contact" className="relative py-10 sm:py-16 lg:py-20">
@@ -434,7 +236,7 @@ export function Contact() {
 
             <div className="gradient-border relative overflow-hidden rounded-2xl bg-white/[0.01] p-4 sm:p-6">
               <AnimatePresence mode="wait">
-                {succeeded ? (
+                {state.succeeded ? (
                   <motion.div
                     key="success"
                     initial={{ opacity: 0, filter: "blur(8px)" }}
@@ -453,7 +255,7 @@ export function Contact() {
                     transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <h4 className="mb-4 text-xl font-semibold">Send a Message</h4>
-                    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                       <div className="space-y-2">
                         <label
                           htmlFor="name"
@@ -463,6 +265,7 @@ export function Contact() {
                         </label>
                         <input
                           id="name"
+                          name="name"
                           type="text"
                           required
                           minLength={3}
@@ -488,76 +291,23 @@ export function Contact() {
                         >
                           Email
                         </label>
-                        <div className="relative">
-                          <input
-                            id="email"
-                            type="email"
-                            required
-                            disabled={isEmailVerified}
-                            placeholder="your.email@example.com"
-                            value={values.email}
-                            onChange={(e) => {
-                              setValues({ ...values, email: e.target.value });
-                              setTouched({ ...touched, email: true });
-                              if (isEmailVerified || isOtpSent) {
-                                setIsEmailVerified(false);
-                                setIsOtpSent(false);
-                                setOtpValue("");
-                                setOtpCooldown(0);
-                              }
-                            }}
-                            onBlur={() => setTouched({ ...touched, email: true })}
-                            className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 pr-24 text-base outline-none transition-all placeholder:text-muted-foreground/30 focus:border-primary/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-primary/50 disabled:opacity-60 sm:px-5 sm:py-3.5 sm:text-sm"
-                          />
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                            {isEmailVerified ? (
-                              <span className="flex items-center gap-1 rounded-full bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400">
-                                Verified ✓
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={handleSendOtp}
-                                disabled={isSendingOtp || !!emailError || !values.email || otpCooldown > 0}
-                                className="flex items-center gap-1 rounded-full bg-primary/20 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/30 disabled:pointer-events-none disabled:opacity-50"
-                              >
-                                {isSendingOtp ? "Sending..." : otpCooldown > 0 ? `Resend (${otpCooldown}s)` : "Verify"}
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                        <input
+                          id="email"
+                          name="email"
+                          type="email"
+                          required
+                          placeholder="your.email@example.com"
+                          value={values.email}
+                          onChange={(e) => {
+                            setValues({ ...values, email: e.target.value });
+                            setTouched({ ...touched, email: true });
+                          }}
+                          onBlur={() => setTouched({ ...touched, email: true })}
+                          className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-base outline-none transition-all placeholder:text-muted-foreground/30 focus:border-primary/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-primary/50 sm:px-5 sm:py-3.5 sm:text-sm"
+                        />
                         {emailError && (
                           <p className="mt-1 text-xs text-red-400">{emailError}</p>
                         )}
-                        <AnimatePresence>
-                          {isOtpSent && !isEmailVerified && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="mt-3 overflow-hidden space-y-2"
-                            >
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  maxLength={6}
-                                  placeholder="Enter 6-digit OTP"
-                                  value={otpValue}
-                                  onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ""))}
-                                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-base outline-none transition-all focus:border-primary/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-primary/50 sm:text-sm"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={handleVerifyOtp}
-                                  disabled={isVerifyingOtp || otpValue.length !== 6}
-                                  className="shrink-0 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-primary/90 disabled:opacity-50"
-                                >
-                                  {isVerifyingOtp ? "Verifying..." : "Verify OTP"}
-                                </button>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
                       </div>
                       <div className="space-y-2">
                         <label
@@ -568,6 +318,7 @@ export function Contact() {
                         </label>
                         <textarea
                           id="message"
+                          name="message"
                           required
                           placeholder="Tell me about your project..."
                           rows={3}
@@ -584,23 +335,18 @@ export function Contact() {
                         )}
                       </div>
 
-                      {/* Turnstile verification input & widget (Hidden) */}
-                      <div className="hidden">
-                        <div ref={turnstileRef} />
-                      </div>
-
-                      {submitError && (
+                      {state.errors && state.errors.length > 0 && (
                         <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-center text-sm text-red-400">
-                          {submitError}
+                          {state.errors.map((err) => err.message).join(", ")}
                         </div>
                       )}
 
                       <button
                         type="submit"
-                        disabled={submitting || !isFormValid || !turnstileToken}
+                        disabled={state.submitting || !isFormValid}
                         className="relative flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-primary py-4 text-sm font-semibold text-white shadow-[0_15px_50px_-15px_rgba(37,99,235,0.45)] transition-all touch-manipulation active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 sm:hover:bg-primary/90"
                       >
-                        {submitting && (
+                        {state.submitting && (
                           <motion.span
                             aria-hidden
                             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
@@ -609,7 +355,7 @@ export function Contact() {
                             transition={{ duration: 1.1, repeat: Infinity, ease: "linear" }}
                           />
                         )}
-                        {submitting ? (
+                        {state.submitting ? (
                           <>
                             <motion.span
                               className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
@@ -638,3 +384,4 @@ export function Contact() {
     </section>
   );
 }
+
