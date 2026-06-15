@@ -1,47 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { renderAsync } from "docx-preview";
-import { Download, FileText, Loader2 } from "lucide-react";
+import { type ReactNode } from "react";
+import { Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RESUME_DOWNLOAD_NAME, RESUME_PATH, RESUME_PREVIEW_ROUTE } from "@/lib/resume";
 
 export function ResumePreviewContent() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    let cancelled = false;
-    setLoading(true);
-    setError(false);
-    container.innerHTML = "";
-
-    fetch(encodeURI(RESUME_PATH))
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load resume");
-        return res.blob();
-      })
-      .then((blob) => {
-        if (cancelled || !containerRef.current) return;
-        return renderAsync(blob, containerRef.current, undefined, {
-          className: "docx-preview-wrapper",
-          inWrapper: true,
-        });
-      })
-      .catch(() => {
-        if (!cancelled) setError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   return (
     <>
       <header className="shrink-0 border-b border-white/10 bg-card px-5 py-4 sm:px-6">
@@ -60,38 +22,30 @@ export function ResumePreviewContent() {
           <a href={RESUME_PATH} download={RESUME_DOWNLOAD_NAME} className="inline-flex">
             <Button type="button" className="min-h-11 gap-2">
               <Download className="h-4 w-4" aria-hidden />
-              Download DOCX
+              Download PDF
             </Button>
           </a>
         </div>
       </header>
 
-      <div className="relative min-h-[60vh] flex-1 overflow-y-auto bg-[#f4f6f9]">
-        {loading && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#f4f6f9]">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
-            <p className="text-sm text-slate-600">Loading preview…</p>
-          </div>
-        )}
-        {error && (
-          <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 px-6 text-center">
-            <p className="text-sm text-slate-600">
-              Preview couldn&apos;t be loaded. You can still download the resume file.
-            </p>
+      <div className="relative min-h-[60vh] flex-1 bg-[#525659] flex items-center justify-center">
+        <object
+          data={RESUME_PATH}
+          type="application/pdf"
+          className="w-full h-[85vh] max-w-5xl mx-auto shadow-2xl"
+        >
+          <div className="flex flex-col items-center justify-center h-full gap-4 text-white">
+            <p>Your browser does not support PDFs.</p>
             <a
               href={RESUME_PATH}
               download={RESUME_DOWNLOAD_NAME}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white"
             >
               <Download className="h-4 w-4" aria-hidden />
               Download resume
             </a>
           </div>
-        )}
-        <div
-          ref={containerRef}
-          className="docx-preview-container mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8"
-        />
+        </object>
       </div>
     </>
   );
