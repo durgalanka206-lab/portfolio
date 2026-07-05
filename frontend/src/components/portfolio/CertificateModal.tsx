@@ -26,7 +26,7 @@ export function CertificateModal({ cert, onClose }: CertificateModalProps) {
     }
     return () => {
       document.body.style.overflow = "unset";
-    }
+    };
   }, [cert]);
 
   // Handle escape key
@@ -91,7 +91,6 @@ export function CertificateModal({ cert, onClose }: CertificateModalProps) {
 
             {/* Content Area (Scrollable if needed) */}
             <div className="flex-1 overflow-y-auto p-6 sm:p-8 flex flex-col items-center">
-              
               {/* Floating Certificate Image */}
               <motion.div
                 animate={{ y: [-5, 5, -5] }}
@@ -108,36 +107,55 @@ export function CertificateModal({ cert, onClose }: CertificateModalProps) {
               {/* Metadata Section */}
               <div className="w-full max-w-3xl mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="flex items-start gap-3 p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
-                  <div className="mt-0.5 text-blue-400"><Award className="h-4 w-4" /></div>
+                  <div className="mt-0.5 text-blue-400">
+                    <Award className="h-4 w-4" />
+                  </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Issuer</p>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">
+                      Issuer
+                    </p>
                     <p className="mt-1 text-sm font-medium text-slate-200">{cert.issuer}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
-                  <div className="mt-0.5 text-emerald-400"><Calendar className="h-4 w-4" /></div>
+                  <div className="mt-0.5 text-emerald-400">
+                    <Calendar className="h-4 w-4" />
+                  </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Issue Date</p>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">
+                      Issue Date
+                    </p>
                     <p className="mt-1 text-sm font-medium text-slate-200">{cert.issueDate}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
-                  <div className="mt-0.5 text-purple-400"><ShieldCheck className="h-4 w-4" /></div>
+                  <div className="mt-0.5 text-purple-400">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Credential Type</p>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">
+                      Credential Type
+                    </p>
                     <p className="mt-1 text-sm font-medium text-slate-200">{cert.credentialType}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
-                  <div className="mt-0.5 text-indigo-400"><BookOpen className="h-4 w-4" /></div>
+                  <div className="mt-0.5 text-indigo-400">
+                    <BookOpen className="h-4 w-4" />
+                  </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Skills Covered</p>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">
+                      Skills Covered
+                    </p>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
-                      {cert.skills.map(skill => (
-                        <span key={skill} className="px-1.5 py-0.5 rounded-md bg-white/5 text-[10px] font-medium text-slate-300">
+                      {cert.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-1.5 py-0.5 rounded-md bg-white/5 text-[10px] font-medium text-slate-300"
+                        >
                           {skill}
                         </span>
                       ))}
@@ -145,7 +163,6 @@ export function CertificateModal({ cert, onClose }: CertificateModalProps) {
                   </div>
                 </div>
               </div>
-
             </div>
           </motion.div>
         </div>

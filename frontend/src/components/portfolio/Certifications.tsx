@@ -115,11 +115,8 @@ export function Certifications() {
           ))}
         </div>
       </div>
-      
-      <CertificateModal 
-        cert={selectedCert} 
-        onClose={() => setSelectedCert(null)} 
-      />
+
+      <CertificateModal cert={selectedCert} onClose={() => setSelectedCert(null)} />
     </section>
   );
 }

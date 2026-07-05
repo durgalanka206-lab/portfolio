@@ -155,7 +155,8 @@ export function FormSuccessCelebration() {
           <span className="text-gradient">Message transmitted</span>
         </motion.h5>
         <motion.p variants={fadeUp} className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Thank you for reaching out. Your message has been sent successfully and I will get back to you soon.
+          Thank you for reaching out. Your message has been sent successfully and I will get back to
+          you soon.
         </motion.p>
         <motion.div
           variants={fadeUp}

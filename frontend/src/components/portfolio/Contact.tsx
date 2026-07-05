@@ -41,7 +41,7 @@ const validateName = (val: string): string => {
   }
   const lower = trimmed.toLowerCase();
   const dummyNames = ["abc", "xyz", "test", "fake", "asdf", "apple banana cherry"];
-  if (dummyNames.some(dummy => lower.includes(dummy))) {
+  if (dummyNames.some((dummy) => lower.includes(dummy))) {
     return "Please enter a valid name.";
   }
   return "";
@@ -52,7 +52,7 @@ const validateEmail = (val: string): string => {
   if (!trimmed) {
     return "Email is required.";
   }
-  
+
   // Strict format validation
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   if (!emailRegex.test(trimmed)) {
@@ -64,8 +64,18 @@ const validateEmail = (val: string): string => {
 
   // Block obvious fake patterns
   const fakePatterns = [
-    "test", "fake", "qwerty", "asdf", "abc123", "temp", "dummy", "sample",
-    "12345", "admin", "noreply", "no-reply"
+    "test",
+    "fake",
+    "qwerty",
+    "asdf",
+    "abc123",
+    "temp",
+    "dummy",
+    "sample",
+    "12345",
+    "admin",
+    "noreply",
+    "no-reply",
   ];
   if (fakePatterns.some((pattern) => localPart.includes(pattern))) {
     return "Please provide a real email address.";
@@ -75,12 +85,26 @@ const validateEmail = (val: string): string => {
   if (/[bcdfghjklmnpqrstvwxz]{5,}/.test(localPart)) {
     return "Email appears to contain random characters.";
   }
-  
+
   // Common keyboard walks
   const walks = [
-    "qwer", "wert", "erty", "rtyu", "tyui", "yuio", "uiop",
-    "asdf", "sdfg", "dfgh", "fghj", "ghjk", "hjkl",
-    "zxcv", "xcvb", "cvbn", "vbnm"
+    "qwer",
+    "wert",
+    "erty",
+    "rtyu",
+    "tyui",
+    "yuio",
+    "uiop",
+    "asdf",
+    "sdfg",
+    "dfgh",
+    "fghj",
+    "ghjk",
+    "hjkl",
+    "zxcv",
+    "xcvb",
+    "cvbn",
+    "vbnm",
   ];
   if (walks.some((walk) => localPart.includes(walk))) {
     return "Email contains invalid sequences.";
@@ -104,13 +128,13 @@ const validateEmail = (val: string): string => {
     "burnermail.io",
     "throwawaymail.com",
     "temp-mail.org",
-    "trashmail.com"
+    "trashmail.com",
   ];
-  
+
   if (disposableDomains.includes(domain)) {
     return "Temporary/disposable email domains are not allowed.";
   }
-  
+
   return "";
 };
 
@@ -139,7 +163,13 @@ export function Contact() {
   const rawNameError = validateName(values.name);
   const rawEmailError = validateEmail(values.email);
   const rawMessageError = validateMessage(values.message);
-  const isFormValid = !rawNameError && !rawEmailError && !rawMessageError && values.name && values.email && values.message;
+  const isFormValid =
+    !rawNameError &&
+    !rawEmailError &&
+    !rawMessageError &&
+    values.name &&
+    values.email &&
+    values.message;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -280,9 +310,7 @@ export function Contact() {
                           onBlur={() => setTouched({ ...touched, name: true })}
                           className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-base outline-none transition-all placeholder:text-muted-foreground/30 focus:border-primary/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-primary/50 sm:px-5 sm:py-3.5 sm:text-sm"
                         />
-                        {nameError && (
-                          <p className="text-xs text-red-400 mt-1">{nameError}</p>
-                        )}
+                        {nameError && <p className="text-xs text-red-400 mt-1">{nameError}</p>}
                       </div>
                       <div className="space-y-2">
                         <label
@@ -305,9 +333,7 @@ export function Contact() {
                           onBlur={() => setTouched({ ...touched, email: true })}
                           className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-base outline-none transition-all placeholder:text-muted-foreground/30 focus:border-primary/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-primary/50 sm:px-5 sm:py-3.5 sm:text-sm"
                         />
-                        {emailError && (
-                          <p className="mt-1 text-xs text-red-400">{emailError}</p>
-                        )}
+                        {emailError && <p className="mt-1 text-xs text-red-400">{emailError}</p>}
                       </div>
                       <div className="space-y-2">
                         <label
@@ -384,4 +410,3 @@ export function Contact() {
     </section>
   );
 }
-

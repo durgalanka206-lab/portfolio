@@ -46,13 +46,13 @@ export default defineConfig(({ command, mode }) => {
           entry: "./src/server.ts",
         },
       }),
- ...(command === "build"
-  ? [
-      nitro({
-        preset: process.env.NITRO_PRESET ?? "vercel",
-      }),
-    ]
-  : []),
+      ...(command === "build"
+        ? [
+            nitro({
+              preset: process.env.NITRO_PRESET ?? "vercel",
+            }),
+          ]
+        : []),
       viteReact(),
     ] as PluginOption[],
     environments: {

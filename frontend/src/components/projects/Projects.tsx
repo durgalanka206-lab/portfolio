@@ -39,7 +39,7 @@ export function Projects() {
   return (
     <section id="projects" className="relative py-16 sm:py-24 bg-[#050810]">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-[#050810] to-[#050810] opacity-50 pointer-events-none" />
-      
+
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
         <SectionHeader
           eyebrow="Projects"

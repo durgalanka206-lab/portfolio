@@ -28,11 +28,15 @@ export function ResumePreviewContent() {
         </div>
       </header>
 
-      <div className="relative min-h-[60vh] flex-1 bg-[#525659] flex items-center justify-center">
+      <div
+        className="relative min-h-[60vh] flex-1 bg-[#525659] flex items-center justify-center"
+        spellCheck={false}
+      >
         <object
           data={RESUME_PATH}
           type="application/pdf"
           className="w-full h-[85vh] max-w-5xl mx-auto shadow-2xl"
+          spellCheck={false}
         >
           <div className="flex flex-col items-center justify-center h-full gap-4 text-white">
             <p>Your browser does not support PDFs.</p>

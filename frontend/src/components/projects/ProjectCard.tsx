@@ -39,7 +39,7 @@ function ProjectPreview({ project }: { project: Project }) {
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
   const githubUrl = projectGithubHref(project.slug);
   const liveUrl = projectLiveHref(project.slug);
-  
+
   const divRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [opacity, setOpacity] = useState(0);
@@ -69,10 +69,10 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
 
       {/* COMPACT CONTENT AREA: reduced padding and margins */}
       <div className="flex flex-1 flex-col p-4 sm:p-5 relative z-20">
-        <h3 className="text-lg font-bold tracking-tight sm:text-xl text-slate-100">{project.name}</h3>
-        <p className="mt-2 text-xs leading-relaxed text-slate-400">
-          {project.tagline}
-        </p>
+        <h3 className="text-lg font-bold tracking-tight sm:text-xl text-slate-100">
+          {project.name}
+        </h3>
+        <p className="mt-2 text-xs leading-relaxed text-slate-400">{project.tagline}</p>
 
         <div className="mt-4 flex flex-col gap-1.5">
           {project.highlights.map((h, i) => (
